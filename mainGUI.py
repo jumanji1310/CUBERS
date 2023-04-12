@@ -132,6 +132,25 @@ class Solver:
         button_send.grid(row=2, column=2, sticky='nsew')
         button_send.bind("<Button-1>", lambda event: self.send(moves_field))
 
+        # adding slow fast speed
+        def choose_speed():
+            selection = "Changed speed to " + str(speed.get())
+            if str(speed.get()) == "1":
+                self.sendToPsoC('slow ')
+            else:
+                self.sendToPsoC('fast ')
+            print(selection)
+
+        toggle_frame = Frame(root)
+        toggle_frame.grid_rowconfigure(0, minsize=grid_height/2)
+        toggle_frame.grid_rowconfigure(1, minsize=grid_height/2)
+        toggle_frame.grid(row=2,column=2)
+        speed = IntVar(value=2)
+        slow = Radiobutton(toggle_frame, text='Slow',font=('Arial', 20), variable=speed,value=1, command=choose_speed)
+        slow.grid(row=0,column=0)
+        fast = Radiobutton(toggle_frame, text='Fast',font=('Arial', 20), variable=speed,value=2, command=choose_speed)
+        fast.grid(row=1,column=0)
+
     def update_cube(self,event):
         # left to right top to bottom in order of U R F D L B
         self.cubestring = 'RBBUUFDDFLRDRRBRRFLFUUFULBDBLBFDBRRDULFDLFULULDBUBLRDF'
