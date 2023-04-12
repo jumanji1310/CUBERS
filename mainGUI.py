@@ -170,23 +170,28 @@ class Solver:
         for i in range(20):
             idx =  random.randint(0,len(self.valid_moves)-1)
             moves.append(self.valid_moves[idx])
-        moves = ' '.join(moves)
+        moves = ' '.join(moves) + ' ' # join moves and add extra space at the end
         
         # displaying scramble moves
         frame = self.root.grid_slaves(2,0)
         label = frame[0].grid_slaves(1,0)
         label[0].configure(text=f'Scramble: {moves}',foreground='black')
 
+        # send to PsoC
+        self.sendToPsoC(moves)
+
     def solve(self,event):
         # update cube before solving
         self.update_cube(event)
         solve_string = sv.solve(self.cubestring,max_length=20,timeout=0.1)
 
-        # replacing moves with 3 turns with counter-clockwise ' notation
+        # replacing moves with 3 turns with counter-clockwise ' notation and normal turns without the 1
         solve_array = solve_string.split(' ')
         for i in range(len(solve_array) - 1):
             if solve_array[i][1] == '3':
                 solve_array[i] = solve_array[i][0] + "'"
+            elif solve_array[i][1] == '1':
+                solve_array[i] = solve_array[i][0]
 
         moves = ' '.join(solve_array)
 
@@ -203,6 +208,12 @@ class Solver:
         frame = self.root.grid_slaves(2,0)
         label = frame[0].grid_slaves(1,0)
         label[0].configure(text=f'Solution: {moves}',foreground='black')
+
+        # print moves
+        print(moves)
+
+        # send to PsoC
+        self.sendToPsoC(moves)
 
     def send(self, input):
         # send moves from input
@@ -223,13 +234,16 @@ class Solver:
                     raise
                 else:
                     new_moves.append(moves[i])
-            moves = ' '.join(new_moves)
+            moves = ' '.join(new_moves) + ' ' # join moves and add extra space at the end
 
             # displaying moves sent
             frame = self.root.grid_slaves(2,0)
             label = frame[0].grid_slaves(1,0)
             label[0].configure(text=f'Moves: {moves}',foreground='black')
             
+            # send to PsoC
+            self.sendToPsoC(moves) 
+
         except Exception as e:
             # displaying error
             frame = self.root.grid_slaves(2,0)
