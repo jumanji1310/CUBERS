@@ -4,6 +4,17 @@ import random
 # import detector.predict as predictor
 import twophase.solver as sv
 
+"""
+Starting comms to PsoC
+"""
+import serial
+
+# Define the serial port and baud rate.
+serial_port = 'COM4'
+baud_rate = 9600
+
+# Open the serial port.
+ser = serial.Serial(serial_port, baud_rate)
 
 class Solver:
 
@@ -233,6 +244,9 @@ class Solver:
         elif u_type == "U2":
             return "R L F2 B2 R' L' D2 R L F2 B2 R' L'"
         
+    def sendToPsoC(self, message):
+        ser.write(f'{message}\r'.encode())
+
 root = Tk()
 Solver(root)
 root.mainloop()
