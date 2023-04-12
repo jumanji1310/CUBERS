@@ -92,6 +92,30 @@ class Solver:
         moves_field = Entry(button_frame,font=('Arial', 20))
         moves_field.grid(row=2, column=0, columnspan=2, sticky='nsew')
 
+        """ add hint to input field """
+
+        # call function when we click on entry box
+        def click(*args):
+            moves_field.delete(0, 'end')
+            moves_field.config(font=('Arial', 20))
+        
+        # call function when we leave entry box
+        def leave(*args):
+            if not moves_field.get(): # check if input box is empty
+                moves_field.delete(0, 'end')
+                moves_field.insert(0, "Enter moves like R, R' or R2 separated by space")
+                moves_field.config(font=('Arial', 12))
+                root.focus()
+
+        # Add text in Entry box
+        moves_field.insert(0, "Enter moves like R, R' or R2 separated by space")
+        moves_field.config(font=('Arial', 12))
+
+        # Use bind method
+        moves_field.bind("<Button-1>", click)
+        moves_field.bind("<Leave>", leave)
+        """"""""""""""""""""""""""""""""""""""""""""""""""""""
+
         # add send button
         button_send = Button(button_frame, text='Send',font=('Arial', 20))
         button_send.grid(row=2, column=2, sticky='nsew')
