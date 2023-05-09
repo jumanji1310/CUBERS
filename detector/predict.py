@@ -57,9 +57,12 @@ def predict_Colour(folder_name):
         img = cv2.imread(os.path.join(folder_name, filename))
         patch_colour_list = ""
         
+        # Converting to RGB
+        RGB_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
         # Predicting colour of each patch
         for coord in coords:
-            patch = img[coord[1]-patch_offset:coord[1]+patch_offset,
+            patch = RGB_img[coord[1]-patch_offset:coord[1]+patch_offset,
                         coord[0]-patch_offset:coord[0]+patch_offset]
             patch_pixels = patch.reshape((-1, 3))
 
@@ -79,4 +82,3 @@ def predict_Colour(folder_name):
         cv2.destroyAllWindows()
 
     return final_turn_string
-# predict_Colour('test_img')
