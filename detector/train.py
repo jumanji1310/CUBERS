@@ -12,6 +12,9 @@ def train_Images():
                     # load the image
                     image = cv2.imread(os.path.join(folder_path, foldername, filename))
                     
+                    # convert to RGB
+                    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
                     # calculate the average pixel value
                     average_pixel_value = np.round(np.mean(image, axis=(0,1)))
                     
@@ -21,3 +24,4 @@ def train_Images():
                     # write to file
                     file.write(f'{int(average_pixel_value[0])},{int(average_pixel_value[1])},{int(average_pixel_value[2])},{foldername}\n')
 
+train_Images()
