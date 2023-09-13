@@ -1,24 +1,30 @@
 from tkinter import *
 import random
-
-# import detector.predict as predictor
-import twophase.solver as sv
-
+import cv2
+import detector.predict as predictor
+from twophase import start_twophase, run_twophase
+# from capture import predict_image
 """
 Starting comms to PsoC
 """
-import serial
+start_serial = True
+if start_serial:
+    import serial
 
-# Define the serial port and baud rate.
-serial_port = 'COM4'
-baud_rate = 9600
+    # Define the serial port and baud rate.
+    serial_port = 'COM4'
+    baud_rate = 9600
 
-# Open the serial port.
-ser = serial.Serial(serial_port, baud_rate)
+    # Open the serial port.
+    ser = serial.Serial(serial_port, baud_rate)
 
 class Solver:
 
     def __init__(self, root):
+        """
+        Start two phase
+        """
+        self.process = start_twophase()
         self.root = root
         self.valid_moves = ["R","R'","R2","F","F'","F2","D","D'","D2","L","L'","L2","B","B'","B2"]
 
@@ -28,7 +34,7 @@ class Solver:
         grid_width = 210
         grid_height = 210
         for i in range(3):
-            root.rowconfigure(i, weight=1, minsize=grid_height)           
+            root.rowconfigure(i, weight=1, minsize=grid_height)
         for j in range(5):
             #extra width for first column
             if j == 0:
@@ -40,9 +46,9 @@ class Solver:
         robot_name = Label(text="CUBERS",font=('Arial', 40))
         robot_name.grid(row=0, column=0,padx=30)
 
-        #frame0_1 and frame0_2
-        text = Label(text="Timer and Counter placeholder")
-        text.grid(row=0, column=1,columnspan=2)
+        # #frame0_1 and frame0_2
+        # text = Label(text="Timer and Counter placeholder")
+        # text.grid(row=0, column=1,columnspan=2)
 
         #adding cube faces
         color = ['white' for _ in range(9)]
@@ -79,7 +85,7 @@ class Solver:
             button_frame.grid_rowconfigure(i, minsize=grid_height/3)
         for j in range(3):
             button_frame.grid_columnconfigure(j, minsize=2*(grid_width + 100)/3)
-        
+
         # add solve button
         button_solve = Button(button_frame, text="Solve",font=('Arial', 20))
         button_solve.grid(row=0, column=0, sticky="nsew")
@@ -109,7 +115,7 @@ class Solver:
         def click(*args):
             moves_field.delete(0, 'end')
             moves_field.config(font=('Arial', 20))
-        
+
         # call function when we leave entry box
         def leave(*args):
             if not moves_field.get(): # check if input box is empty
@@ -134,13 +140,14 @@ class Solver:
 
         # adding slow fast speed
         def choose_speed():
-            selection = "Changed speed to " + str(speed.get())
+            selection = "Changed speed to " + str('Slow' if speed.get() == 1 else 'Fast')
             if str(speed.get()) == "1":
                 self.sendToPsoC('slow ')
             else:
                 self.sendToPsoC('fast ')
             print(selection)
 
+        """ Adding toggle between Slow and Fast"""
         toggle_frame = Frame(root)
         toggle_frame.grid_rowconfigure(0, minsize=grid_height/2)
         toggle_frame.grid_rowconfigure(1, minsize=grid_height/2)
@@ -152,9 +159,26 @@ class Solver:
         fast.grid(row=1,column=0)
 
     def update_cube(self,event):
+        """ 
+        Scan image to determine each square colour of each face, 
+        update the cubestring and display on the GUI
+        """
+
         # left to right top to bottom in order of U R F D L B
-        self.cubestring = 'RBBUUFDDFLRDRRBRRFLFUUFULBDBLBFDBRRDULFDLFULULDBUBLRDF'
-        # cubestring = predictor.predict_Colour('images/Set2')
+        self.cubestring = 'LRUDULFLFRDBBRDRRDUUDFFUDBBLLURDFRULUBRRLLDUFLDFFBBBFB' # opposite of L' D2 F2 L B2 L' B2 L D R F D' L2 B' D' R2 D R2 D2 F' R
+        # R' F D2 R2 D' R2 D B L2 D F' R' D' L' B2 L B2 L' F2 D2 L
+        # vid = cv2.VideoCapture(0)
+
+        # # Capture a single frame from the camera
+        # ret, frame = vid.read()
+
+        # # Release the VideoCapture object
+        # vid.release()
+        
+        # cv2.imshow('Scan',frame)
+        # cv2.waitKey(0)
+        # self.cubestring = predict_image(frame)
+        # self.cubestring = predictor.predict_Colour('images/Capture')
 
         # converting cube state into colours
         colour = []
@@ -162,13 +186,13 @@ class Solver:
             if face == 'F':
                 colour.append('white')
             elif face == 'U':
-                colour.append('orange')
-            elif face == 'R':
                 colour.append('blue')
-            elif face == 'L':
-                colour.append('green')
-            elif face == 'D':
+            elif face == 'R':
                 colour.append('red')
+            elif face == 'L':
+                colour.append('orange')
+            elif face == 'D':
+                colour.append('green')
             elif face == 'B':
                 colour.append('yellow')
 
@@ -181,52 +205,102 @@ class Solver:
                     square_color = colour[face_id*9 + row*3 + col]
                     square[0].configure(background=square_color)
                     square[0].configure(highlightbackground='black')
-            
+
+        print("Scanned")
+
     def scramble(self,event):
-      
+        """
+        Generate 20 random valid moves for robot to scramble
+        """
         # get 20 moves
         moves = []
         for i in range(20):
             idx =  random.randint(0,len(self.valid_moves)-1)
             moves.append(self.valid_moves[idx])
         moves = ' '.join(moves) + ' ' # join moves and add extra space at the end
-        
+
         # displaying scramble moves
         frame = self.root.grid_slaves(2,0)
         label = frame[0].grid_slaves(1,0)
         label[0].configure(text=f'Scramble: {moves}',foreground='black')
 
+        print(f'Scramble: {moves}')
+        
         # send to PsoC
         self.sendToPsoC(moves)
 
     def solve(self,event):
-        # update cube before solving
-        self.update_cube(event)
-        solve_string = sv.solve(self.cubestring,max_length=20,timeout=0.1)
+        """
+        Scan the cube, update the GUI and solve it
+        """
+        
+        # Convert cube state where up face becomes back face
+        """
+        U to B
+        F to U
+        D to F
+        B to D
+        """
+        def rotate_string_clockwise(word):
+            new_string = ""
+            for col in range(3):
+                for row in range(2,-1,-1):
+                    new_string += word[row*3 + col]
+            return new_string
 
-        # replacing moves with 3 turns with counter-clockwise ' notation and normal turns without the 1
-        solve_array = solve_string.split(' ')
-        for i in range(len(solve_array) - 1):
-            if solve_array[i][1] == '3':
-                solve_array[i] = solve_array[i][0] + "'"
-            elif solve_array[i][1] == '1':
-                solve_array[i] = solve_array[i][0]
+        def rotate_string_anticlockwise(word):
+            new_string = ""
+            for col in range(2,-1,-1):
+                for row in range(3):
+                    new_string += word[row*3 + col]
+            return new_string
+        
+        def flip_upsidedown(word):
+            new_string = ""
+            for row in range(2,-1,-1):
+                for col in range(2,-1,-1):
+                    new_string += word[row*3 + col]
+            return new_string
 
-        moves = ' '.join(solve_array)
 
-        # # replacing U moves
-        # moves = []
-        # for move in solve_array:
-        #     if move in ["U","U'","U2"]:
-        #         moves.append(self.replace_u(move))
-        #     else:
-        #         moves.append(move)
-        # moves = ' '.join(moves)
+        up_string = self.cubestring[:9]
+        right_string = self.cubestring[9:18]
+        front_string = self.cubestring[18:27]
+        down_string = self.cubestring[27:36]
+        left_string = self.cubestring[36:45]
+        back_string = self.cubestring[45:54]
+        new_cubestring = front_string + rotate_string_clockwise(right_string) + down_string + flip_upsidedown(back_string) + rotate_string_anticlockwise(left_string) + flip_upsidedown(up_string)
+        
+        stateswap_dict = {'U':'B','F':'U','D':'F','B':'D'}
+        new_cubestring2 = ""
+        for letter in new_cubestring:
+            if letter in stateswap_dict:
+                new_cubestring2 += stateswap_dict[letter]
+            else:
+                new_cubestring2 += letter
+
+        # scan cube before solving
+        # self.update_cube(event)
+        solve_string = run_twophase(self.process,new_cubestring2)
+        solve_array = solve_string.split(' ')[:-1]
+
+        # Converting to moves and rotating so B moves become U moves
+        """
+        U to F
+        F to D
+        D to B
+        """
+        moveswap_dict = {'U':'F','F':'D','D':'B'}
+        for i in range(len(solve_array)):
+            if solve_array[i][0] in moveswap_dict:
+                solve_array[i] = moveswap_dict[solve_array[i][0]] + solve_array[i][1:]
+
+        moves = ' '.join(solve_array) + ' '
 
         # displaying solution moves
         frame = self.root.grid_slaves(2,0)
         label = frame[0].grid_slaves(1,0)
-        label[0].configure(text=f'Solution: {moves}',foreground='black')
+        label[0].configure(text=f'Solution: {moves} ({len(moves.split(" ")) -1} moves)',foreground='black')
 
         # print moves
         print(moves)
@@ -235,9 +309,12 @@ class Solver:
         self.sendToPsoC(moves)
 
     def send(self, input):
-        # send moves from input
-        input_string = input.get()
+        """
+        send moves from input to motors
+        """
 
+        input_string = input.get()
+        print(f'Received string {input_string}')
         # check if moves are valid and replace U turns
         try:
             moves = input_string.split(' ')
@@ -247,7 +324,7 @@ class Solver:
             for i in range(len(moves)):
                 moves[i] = moves[i].upper()
                 # swap U moves with alternative
-                if moves[i] in ["U","U'","U2"]: 
+                if moves[i] in ["U","U'","U2"]:
                     new_moves.append(self.replace_u(moves[i]))
                 elif moves[i] not in self.valid_moves:
                     raise
@@ -259,16 +336,16 @@ class Solver:
             frame = self.root.grid_slaves(2,0)
             label = frame[0].grid_slaves(1,0)
             label[0].configure(text=f'Moves: {moves}',foreground='black')
-            
+
             # send to PsoC
-            self.sendToPsoC(moves) 
+            self.sendToPsoC(moves)
 
         except Exception as e:
             # displaying error
             frame = self.root.grid_slaves(2,0)
             label = frame[0].grid_slaves(1,0)
             label[0].configure(text=f'Error: invalid moves',foreground='red')
-    
+
     def replace_u(self, u_type):
         if u_type == "U":
             return "R L F2 B2 R' L' D R L F2 B2 R' L'"
@@ -276,9 +353,12 @@ class Solver:
             return "R L F2 B2 R' L' D' R L F2 B2 R' L'"
         elif u_type == "U2":
             return "R L F2 B2 R' L' D2 R L F2 B2 R' L'"
-        
+
     def sendToPsoC(self, message):
-        ser.write(f'{message}\r'.encode())
+        if start_serial:
+            ser.write(f'{message}\r'.encode())
+        else:
+            print(f'Emulating message {message}')
 
 root = Tk()
 Solver(root)

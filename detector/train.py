@@ -12,7 +12,7 @@ def train_Images():
                     # load the image
                     image = cv2.imread(os.path.join(folder_path, foldername, filename))
                     
-                    # convert to RGB
+                    # # convert to RGB
                     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
                     # calculate the average pixel value
