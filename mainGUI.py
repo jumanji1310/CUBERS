@@ -110,7 +110,8 @@ class Solver:
         button_scan.bind("<Button-1>", self.update_cube)
 
         # add solution string
-        solution_string = Label(button_frame, text="",font=('Arial', 12))
+        self.solutionStr = StringVar(value="")
+        solution_string = Label(button_frame, textvariable=self.solutionStr,font=('Arial', 12))
         solution_string.grid(row=1, column=0, columnspan=3, sticky ='w')
 
         # add input
@@ -227,11 +228,7 @@ class Solver:
             moves.append(self.valid_moves[idx])
         moves = ' '.join(moves) + ' ' # join moves and add extra space at the end
         self.moveLength = len(moves.split(" ")) - 1
-
-        # displaying scramble moves
-        frame = self.root.grid_slaves(2,0)
-        label = frame[0].grid_slaves(1,0)
-        label[0].configure(text=f'Scramble: {moves}  ({self.moveLength} moves)',foreground='black')
+        self.solutionStr.set(f'Moves: {moves} ({self.moveLength} moves)')
 
         print(f'Scramble: {moves}')
         
@@ -307,11 +304,7 @@ class Solver:
 
         moves = ' '.join(solve_array) + ' '
         self.moveLength = len(moves.split(" ")) - 1
-
-        # displaying solution moves
-        frame = self.root.grid_slaves(2,0)
-        label = frame[0].grid_slaves(1,0)
-        label[0].configure(text=f'Solution: {moves} ({self.moveLength} moves)',foreground='black')
+        self.solutionStr.set(f'Solution: {moves} ({self.moveLength} moves)')
 
         # print moves
         print(moves)
@@ -340,20 +333,14 @@ class Solver:
                     new_moves.append(moves[i])
             moves = ' '.join(new_moves) + ' ' # join moves and add extra space at the end
             self.moveLength = len(moves.split(" ")) - 1
-
-            # displaying moves sent
-            frame = self.root.grid_slaves(2,0)
-            label = frame[0].grid_slaves(1,0)
-            label[0].configure(text=f'Moves: {moves}  ({self.moveLength} moves)',foreground='black')
+            self.solutionStr.set(f'Moves: {moves}  ({self.moveLength} moves)')
 
             # send to PsoC
             self.sendToPsoC(moves)
 
         except Exception as e:
             # displaying error
-            frame = self.root.grid_slaves(2,0)
-            label = frame[0].grid_slaves(1,0)
-            label[0].configure(text=f'Error: invalid moves',foreground='red')
+            self.solutionStr.set('Error: invalid moves')
 
     def sendToPsoC(self, message):
         if start_serial:
