@@ -334,10 +334,7 @@ class Solver:
             # checking for valid moves
             for i in range(len(moves)):
                 moves[i] = moves[i].upper()
-                # swap U moves with alternative
-                if moves[i] in ["U","U'","U2"]:
-                    new_moves.append(self.replace_u(moves[i]))
-                elif moves[i] not in self.valid_moves:
+                if moves[i] not in self.valid_moves:
                     raise
                 else:
                     new_moves.append(moves[i])
@@ -358,16 +355,7 @@ class Solver:
             label = frame[0].grid_slaves(1,0)
             label[0].configure(text=f'Error: invalid moves',foreground='red')
 
-    def replace_u(self, u_type):
-        if u_type == "U":
-            return "R L F2 B2 R' L' D R L F2 B2 R' L'"
-        elif u_type == "U'":
-            return "R L F2 B2 R' L' D' R L F2 B2 R' L'"
-        elif u_type == "U2":
-            return "R L F2 B2 R' L' D2 R L F2 B2 R' L'"
-
     def sendToPsoC(self, message):
-        valid_moves = ["R","R'","R2","F","F'","F2","D","D'","D2","L","L'","L2","B","B'","B2"]
         if start_serial:
             ser.write(f'{message}\r'.encode())
 
@@ -389,7 +377,7 @@ class Solver:
                 if received_message == 'Finished':
                     print(f'Time elapsed: {elapsed_time:.2f} seconds')
                     break  # Exit the loop if 'stop' is received
-                elif received_message in valid_moves:
+                elif received_message in self.valid_moves:
                     # updating counter
                     self.moveLength -= 1
                     self.counter.set(f'Counter: {self.moveLength} moves left')
