@@ -3,6 +3,7 @@ import random
 import cv2
 import detector.predict as predictor
 from twophase import start_twophase, run_twophase
+import time
 # from capture import predict_image
 """
 Starting comms to PsoC
@@ -46,13 +47,20 @@ class Solver:
         robot_name = Label(text="CUBERS",font=('Arial', 40))
         robot_name.grid(row=0, column=0,padx=30)
 
-        # #frame0_1 and frame0_2
-        # text = Label(text="Timer and Counter placeholder")
-        # text.grid(row=0, column=1,columnspan=2)
+        #frame0_1 and frame0_2
+        statFrame = Frame(root)
+        statFrame.grid_rowconfigure(0, minsize=grid_height/2)
+        statFrame.grid_rowconfigure(1, minsize=grid_height/2)
+        statFrame.grid(row=1, column=0,columnspan=1,sticky='w')
+        self.sec = StringVar(value ='Timer: 0.0 seconds')
+        timerText = Label(statFrame, textvariable=self.sec,font=('Arial', 24))
+        timerText.grid(row=0,column=0)
+        self.counter = StringVar(value = 'Counter: 0 moves left')
+        counterText = Label(statFrame, textvariable=self.counter,font=('Arial',24))
+        counterText.grid(row=1,column=0)
 
         #adding cube faces
         color = ['white' for _ in range(9)]
-        # color = ['blue', 'yellow', 'yellow', 'orange', 'orange', 'white', 'red', 'red', 'white']
         self.cube_face_loc = [(0,3),(1,4),(1,3),(2,3),(1,2),(1,1)] # U R F D L B
         cube_face_label = ['U','R','F','D','L','B']
         for face_id, cell in enumerate(self.cube_face_loc):
@@ -218,11 +226,12 @@ class Solver:
             idx =  random.randint(0,len(self.valid_moves)-1)
             moves.append(self.valid_moves[idx])
         moves = ' '.join(moves) + ' ' # join moves and add extra space at the end
+        self.moveLength = len(moves.split(" ")) - 1
 
         # displaying scramble moves
         frame = self.root.grid_slaves(2,0)
         label = frame[0].grid_slaves(1,0)
-        label[0].configure(text=f'Scramble: {moves}',foreground='black')
+        label[0].configure(text=f'Scramble: {moves}  ({self.moveLength} moves)',foreground='black')
 
         print(f'Scramble: {moves}')
         
@@ -234,6 +243,9 @@ class Solver:
         Scan the cube, update the GUI and solve it
         """
         
+        # scan cube before solving
+        # self.update_cube(event)
+
         # Convert cube state where up face becomes back face
         """
         U to B
@@ -279,8 +291,6 @@ class Solver:
             else:
                 new_cubestring2 += letter
 
-        # scan cube before solving
-        # self.update_cube(event)
         solve_string = run_twophase(self.process,new_cubestring2)
         solve_array = solve_string.split(' ')[:-1]
 
@@ -296,11 +306,12 @@ class Solver:
                 solve_array[i] = moveswap_dict[solve_array[i][0]] + solve_array[i][1:]
 
         moves = ' '.join(solve_array) + ' '
+        self.moveLength = len(moves.split(" ")) - 1
 
         # displaying solution moves
         frame = self.root.grid_slaves(2,0)
         label = frame[0].grid_slaves(1,0)
-        label[0].configure(text=f'Solution: {moves} ({len(moves.split(" ")) -1} moves)',foreground='black')
+        label[0].configure(text=f'Solution: {moves} ({self.moveLength} moves)',foreground='black')
 
         # print moves
         print(moves)
@@ -331,11 +342,12 @@ class Solver:
                 else:
                     new_moves.append(moves[i])
             moves = ' '.join(new_moves) + ' ' # join moves and add extra space at the end
+            self.moveLength = len(moves.split(" ")) - 1
 
             # displaying moves sent
             frame = self.root.grid_slaves(2,0)
             label = frame[0].grid_slaves(1,0)
-            label[0].configure(text=f'Moves: {moves}',foreground='black')
+            label[0].configure(text=f'Moves: {moves}  ({self.moveLength} moves)',foreground='black')
 
             # send to PsoC
             self.sendToPsoC(moves)
@@ -355,8 +367,32 @@ class Solver:
             return "R L F2 B2 R' L' D2 R L F2 B2 R' L'"
 
     def sendToPsoC(self, message):
+        valid_moves = ["R","R'","R2","F","F'","F2","D","D'","D2","L","L'","L2","B","B'","B2"]
         if start_serial:
             ser.write(f'{message}\r'.encode())
+
+            self.counter.set(f'Counter: {self.moveLength} moves left')
+            start_time = time.time()  # Record start time
+            while True:
+                # calculating elapsed time
+                end_time = time.time()  # Record end time
+                elapsed_time = end_time - start_time  # Calculate elapsed time
+                
+                # updating timer
+                self.sec.set(f'Timer: {elapsed_time:.2f} seconds')
+                root.update()
+
+                # checking message from PsoC
+                received_message = ser.readline().decode().strip()  # Read a line from serial
+                print(f'Received message: {received_message}')
+
+                if received_message == 'Finished':
+                    print(f'Time elapsed: {elapsed_time:.2f} seconds')
+                    break  # Exit the loop if 'stop' is received
+                elif received_message in valid_moves:
+                    # updating counter
+                    self.moveLength -= 1
+                    self.counter.set(f'Counter: {self.moveLength} moves left')
         else:
             print(f'Emulating message {message}')
 
