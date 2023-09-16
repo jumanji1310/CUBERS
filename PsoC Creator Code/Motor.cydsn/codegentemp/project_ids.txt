@@ -1,0 +1,6 @@
+C:\Users\JJ\Documents\PSoC Creator\CUBERworkspace\Motor.cydsn\Motor.cyprj|f02b6b34-62ec-42d7-ae5c-0a40c143a5d9
+C:\Program Files (x86)\Cypress\PSoC Creator\4.4\PSoC Creator\psoc\content\default\CyAnnotationLibrary\CyAnnotationLibrary.cylib\CyAnnotationLibrary.cyprj|e271d725-786e-4cb8-8905-9ee9674f3efc
+C:\Users\JJ\Documents\PSoC Creator\4.4\Downloads ( 4.4).cylib\Downloads ( 4.4).cyprj|1f67c59b-bc61-4d6c-8cd0-c95f1397c37c
+C:\Program Files (x86)\Cypress\PSoC Creator\4.4\PSoC Creator\psoc\content\cycomponentlibraryupdates\CyComponentLibraryUpdates.cylib\CyComponentLibraryUpdates.cyprj|f6e79d72-457c-4001-b96f-f5ff1cf45f5d
+C:\Program Files (x86)\Cypress\PSoC Creator\4.4\PSoC Creator\psoc\content\cycomponentlibrary\CyComponentLibrary.cylib\CyComponentLibrary.cyprj|b4f32134-e310-4e6d-bf8b-65699b6413ee
+C:\Program Files (x86)\Cypress\PSoC Creator\4.4\PSoC Creator\psoc\content\cyprimitives\CyPrimitives.cylib\CyPrimitives.cyprj|10c6e631-fd39-4f03-b304-003b6bbbbf6d
