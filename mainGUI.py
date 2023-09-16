@@ -3,6 +3,7 @@ import random
 import cv2
 import detector.predict as predictor
 from twophase import start_twophase, run_twophase
+from rotate_helper import *
 import time
 # from capture import predict_image
 """
@@ -28,6 +29,8 @@ class Solver:
         self.process = start_twophase()
         self.root = root
         self.valid_moves = ["R","R'","R2","F","F'","F2","D","D'","D2","L","L'","L2","B","B'","B2"]
+        self.moveLength = 0
+        self.cubestring = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
 
         # make the window not resizable
         root.resizable(width=0, height=0)
@@ -107,7 +110,7 @@ class Solver:
         # add scan button
         button_scan = Button(button_frame, text="Scan",font=('Arial', 20))
         button_scan.grid(row=0, column=2, sticky="nsew")
-        button_scan.bind("<Button-1>", self.update_cube)
+        button_scan.bind("<Button-1>", self.scan)
 
         # add solution string
         self.solutionStr = StringVar(value="")
@@ -150,11 +153,12 @@ class Solver:
         # adding slow fast speed
         def choose_speed():
             selection = "Changed speed to " + str('Slow' if speed.get() == 1 else 'Fast')
+            print(selection)
             if str(speed.get()) == "1":
                 self.sendToPsoC('slow ')
             else:
                 self.sendToPsoC('fast ')
-            print(selection)
+
 
         """ Adding toggle between Slow and Fast"""
         toggle_frame = Frame(root)
@@ -167,28 +171,10 @@ class Solver:
         fast = Radiobutton(toggle_frame, text='Fast',font=('Arial', 20), variable=speed,value=2, command=choose_speed)
         fast.grid(row=1,column=0)
 
-    def update_cube(self,event):
+    def update_cube(self):
         """ 
-        Scan image to determine each square colour of each face, 
-        update the cubestring and display on the GUI
+        Display cubestring on the GUI
         """
-
-        # left to right top to bottom in order of U R F D L B
-        self.cubestring = 'LRUDULFLFRDBBRDRRDUUDFFUDBBLLURDFRULUBRRLLDUFLDFFBBBFB' # opposite of L' D2 F2 L B2 L' B2 L D R F D' L2 B' D' R2 D R2 D2 F' R
-        # R' F D2 R2 D' R2 D B L2 D F' R' D' L' B2 L B2 L' F2 D2 L
-        # vid = cv2.VideoCapture(0)
-
-        # # Capture a single frame from the camera
-        # ret, frame = vid.read()
-
-        # # Release the VideoCapture object
-        # vid.release()
-        
-        # cv2.imshow('Scan',frame)
-        # cv2.waitKey(0)
-        # self.cubestring = predict_image(frame)
-        # self.cubestring = predictor.predict_Colour('images/Capture')
-
         # converting cube state into colours
         colour = []
         for face in self.cubestring:
@@ -214,21 +200,41 @@ class Solver:
                     square_color = colour[face_id*9 + row*3 + col]
                     square[0].configure(background=square_color)
                     square[0].configure(highlightbackground='black')
+    
+    def scan(self,event):
+        """ 
+        Scan image to determine each square colour of each face and update the cubestring
+        """
+        # left to right top to bottom in order of U R F D L B
+        self.cubestring = 'LRUDULFLFRDBBRDRRDUUDFFUDBBLLURDFRULUBRRLLDUFLDFFBBBFB' # opposite of L' D2 F2 L B2 L' B2 L D R F D' L2 B' D' R2 D R2 D2 F' R
+        # R' F D2 R2 D' R2 D B L2 D F' R' D' L' B2 L B2 L' F2 D2 L
+        # vid = cv2.VideoCapture(0)
 
+        # # Capture a single frame from the camera
+        # ret, frame = vid.read()
+
+        # # Release the VideoCapture object
+        # vid.release()
+        
+        # cv2.imshow('Scan',frame)
+        # cv2.waitKey(0)
+        # self.cubestring = predict_image(frame)
+        # self.cubestring = predictor.predict_Colour('images/Capture')
+        self.update_cube()
         print("Scanned")
 
     def scramble(self,event):
         """
-        Generate 20 random valid moves for robot to scramble
+        Generate 25 random valid moves for robot to scramble
         """
-        # get 20 moves
+        # get 25 moves
         moves = []
-        for i in range(20):
+        for i in range(25):
             idx =  random.randint(0,len(self.valid_moves)-1)
             moves.append(self.valid_moves[idx])
         moves = ' '.join(moves) + ' ' # join moves and add extra space at the end
         self.moveLength = len(moves.split(" ")) - 1
-        self.solutionStr.set(f'Moves: {moves} ({self.moveLength} moves)')
+        self.solutionStr.set(f'Scramble: {moves} ({self.moveLength} moves)')
 
         print(f'Scramble: {moves}')
         
@@ -241,7 +247,7 @@ class Solver:
         """
         
         # scan cube before solving
-        # self.update_cube(event)
+        # self.scan(event)
 
         # Convert cube state where up face becomes back face
         """
@@ -250,35 +256,13 @@ class Solver:
         D to F
         B to D
         """
-        def rotate_string_clockwise(word):
-            new_string = ""
-            for col in range(3):
-                for row in range(2,-1,-1):
-                    new_string += word[row*3 + col]
-            return new_string
-
-        def rotate_string_anticlockwise(word):
-            new_string = ""
-            for col in range(2,-1,-1):
-                for row in range(3):
-                    new_string += word[row*3 + col]
-            return new_string
-        
-        def flip_upsidedown(word):
-            new_string = ""
-            for row in range(2,-1,-1):
-                for col in range(2,-1,-1):
-                    new_string += word[row*3 + col]
-            return new_string
-
-
         up_string = self.cubestring[:9]
         right_string = self.cubestring[9:18]
         front_string = self.cubestring[18:27]
         down_string = self.cubestring[27:36]
         left_string = self.cubestring[36:45]
         back_string = self.cubestring[45:54]
-        new_cubestring = front_string + rotate_string_clockwise(right_string) + down_string + flip_upsidedown(back_string) + rotate_string_anticlockwise(left_string) + flip_upsidedown(up_string)
+        new_cubestring = front_string + rotate_cw(right_string) + down_string + flip_2(back_string) + rotate_ccw(left_string) + flip_2(up_string)
         
         stateswap_dict = {'U':'B','F':'U','D':'F','B':'D'}
         new_cubestring2 = ""
@@ -354,7 +338,7 @@ class Solver:
                 elapsed_time = end_time - start_time  # Calculate elapsed time
                 
                 # updating timer
-                self.sec.set(f'Timer: {elapsed_time:.2f} seconds')
+                self.sec.set(f'Timer: {elapsed_time:.4f} seconds')
                 root.update()
 
                 # checking message from PsoC
@@ -362,12 +346,16 @@ class Solver:
                 print(f'Received message: {received_message}')
 
                 if received_message == 'Finished':
-                    print(f'Time elapsed: {elapsed_time:.2f} seconds')
+                    print(f'Time elapsed: {elapsed_time:.4f} seconds')
                     break  # Exit the loop if 'stop' is received
                 elif received_message in self.valid_moves:
                     # updating counter
                     self.moveLength -= 1
                     self.counter.set(f'Counter: {self.moveLength} moves left')
+
+                    # updating cube state on GUI
+                    self.cubestring = update_cubestring(self.cubestring, [received_message])
+                    self.update_cube()
         else:
             print(f'Emulating message {message}')
 
