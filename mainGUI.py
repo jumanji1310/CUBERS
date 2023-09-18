@@ -34,6 +34,7 @@ class Solver:
         self.vid = cv2.VideoCapture(0)
         ret, self.frame = self.vid.read()
         self.scanTime = 0
+        self.searchTime = 0
 
         # make the window not resizable
         root.resizable(width=0, height=0)
@@ -223,9 +224,8 @@ class Solver:
         self.update_cube()
         end_time = time.time()
         self.scanTime = end_time - start_time
-        print(f"Elapsed time: {self.scanTime} seconds")
+        print(f"Scan time: {self.scanTime} seconds")
         self.sec.set(f'Timer: {self.scanTime:.4f} seconds')
-        print("Scanned")
 
     def scramble(self,event):
         """
@@ -252,7 +252,7 @@ class Solver:
         
         # scan cube before solving
         self.scan(event)
-
+        start_time = time.time()
         # Convert cube state where up face becomes back face
         """
         U to B
@@ -293,9 +293,14 @@ class Solver:
         moves = ' '.join(solve_array) + ' '
         self.moveLength = len(moves.split(" ")) - 1
         self.solutionStr.set(f'Solution: {moves} ({self.moveLength} moves)')
+        
+        end_time = time.time()
+        self.searchTime = end_time - start_time
+        print(f"Search time: {self.searchTime} seconds")
+        self.sec.set(f'Timer: {self.scanTime + self.searchTime:.4f} seconds')
 
         # print moves
-        print(moves)
+        print(f'Solution: {moves}')
 
         # send to PsoC
         self.sendToPsoC(moves)
@@ -306,7 +311,6 @@ class Solver:
         """
 
         input_string = input.get()
-        print(f'Received string {input_string}')
         # check if moves are valid and replace U turns
         try:
             moves = input_string.split(' ')
@@ -323,6 +327,7 @@ class Solver:
             self.moveLength = len(moves.split(" ")) - 1
             self.solutionStr.set(f'Moves: {moves}  ({self.moveLength} moves)')
 
+            print(f'Send: {moves}')
             # send to PsoC
             self.sendToPsoC(moves)
 
@@ -336,21 +341,23 @@ class Solver:
 
             self.counter.set(f'Counter: {self.moveLength} moves left')
             start_time = time.time()  # Record start time
+            print('Received message: ',end="")
             while True:
                 # calculating elapsed time
                 end_time = time.time()  # Record end time
                 solve_time = end_time - start_time  # Calculate elapsed time
                 
                 # updating timer
-                self.sec.set(f'Timer: {self.scanTime + solve_time:.4f} seconds')
+                self.sec.set(f'Timer: {self.scanTime + self.searchTime + solve_time:.4f} seconds')
                 root.update()
 
                 # checking message from PsoC
                 received_message = ser.readline().decode().strip()  # Read a line from serial
-                print(f'Received message: {received_message}')
+                print(f' {received_message}',end="")
 
                 if received_message == 'Finished':
-                    print(f'Time elapsed: {self.scanTime + solve_time:.4f} seconds')
+                    print(f'\nSolve time: {solve_time:.4f} seconds')
+                    print(f'Total time: {self.scanTime + self.searchTime + solve_time:.4f} seconds')
                     break  # Exit the loop if 'stop' is received
                 elif received_message in self.valid_moves:
                     # updating counter
