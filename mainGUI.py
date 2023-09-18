@@ -5,7 +5,7 @@ import detector.predict as predictor
 from twophase import start_twophase, run_twophase
 from rotate_helper import *
 import time
-# from capture import predict_image
+from capture import predict_image
 """
 Starting comms to PsoC
 """
@@ -31,6 +31,9 @@ class Solver:
         self.valid_moves = ["R","R'","R2","F","F'","F2","D","D'","D2","L","L'","L2","B","B'","B2"]
         self.moveLength = 0
         self.cubestring = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
+        self.vid = cv2.VideoCapture(0)
+        ret, self.frame = self.vid.read()
+        self.scanTime = 0
 
         # make the window not resizable
         root.resizable(width=0, height=0)
@@ -208,19 +211,20 @@ class Solver:
         # left to right top to bottom in order of U R F D L B
         self.cubestring = 'LRUDULFLFRDBBRDRRDUUDFFUDBBLLURDFRULUBRRLLDUFLDFFBBBFB' # opposite of L' D2 F2 L B2 L' B2 L D R F D' L2 B' D' R2 D R2 D2 F' R
         # R' F D2 R2 D' R2 D B L2 D F' R' D' L' B2 L B2 L' F2 D2 L
-        # vid = cv2.VideoCapture(0)
 
-        # # Capture a single frame from the camera
-        # ret, frame = vid.read()
-
-        # # Release the VideoCapture object
-        # vid.release()
-        
+        start_time = time.time()
+        # Capture a single frame from the camera
+        ret, self.frame = self.vid.read()
         # cv2.imshow('Scan',frame)
         # cv2.waitKey(0)
-        # self.cubestring = predict_image(frame)
+        self.testcubestring = predict_image(self.frame)
+
         # self.cubestring = predictor.predict_Colour('images/Capture')
         self.update_cube()
+        end_time = time.time()
+        self.scanTime = end_time - start_time
+        print(f"Elapsed time: {self.scanTime} seconds")
+        self.sec.set(f'Timer: {self.scanTime:.4f} seconds')
         print("Scanned")
 
     def scramble(self,event):
@@ -247,7 +251,7 @@ class Solver:
         """
         
         # scan cube before solving
-        # self.scan(event)
+        self.scan(event)
 
         # Convert cube state where up face becomes back face
         """
@@ -335,10 +339,10 @@ class Solver:
             while True:
                 # calculating elapsed time
                 end_time = time.time()  # Record end time
-                elapsed_time = end_time - start_time  # Calculate elapsed time
+                solve_time = end_time - start_time  # Calculate elapsed time
                 
                 # updating timer
-                self.sec.set(f'Timer: {elapsed_time:.4f} seconds')
+                self.sec.set(f'Timer: {self.scanTime + solve_time:.4f} seconds')
                 root.update()
 
                 # checking message from PsoC
@@ -346,7 +350,7 @@ class Solver:
                 print(f'Received message: {received_message}')
 
                 if received_message == 'Finished':
-                    print(f'Time elapsed: {elapsed_time:.4f} seconds')
+                    print(f'Time elapsed: {self.scanTime + solve_time:.4f} seconds')
                     break  # Exit the loop if 'stop' is received
                 elif received_message in self.valid_moves:
                     # updating counter

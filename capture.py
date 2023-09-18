@@ -95,15 +95,6 @@ back_face = [(width-w10,h10),(w12,h12),(w10,h10),(width-w8,h8),(w8,h8),(width-w4
 # endregion
 
 def normalise(image):
-    # # Convert image to LAB color space
-    # lab_image = cv2.cvtColor(image, cv2.COLOR_BGR2Lab)
-
-    # # Apply histogram equalization to the L channel
-    # lab_image[:, :, 0] = cv2.equalizeHist(lab_image[:, :, 0])
-
-    # # Convert back to BGR color space
-    # normalized_image = cv2.cvtColor(lab_image, cv2.COLOR_Lab2BGR)
-
     # Convert the image to LAB color space
     lab_image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
 
@@ -186,7 +177,7 @@ def predict_image(img):
     print(f'Accuracy = {total_score/48*100:.2f}%')
 
     # Show the plot
-    plt.show()
+    # plt.show()
 
     return stringToSingmaster(' '.join(state_string))
 
@@ -256,7 +247,7 @@ def run_video():
             break
 
 
-run_video()
+# run_video()
 
 # frame = cv2.imread('images/capture/original_dark.png')
 # frame = cv2.imread('images/capture/normalised_dark.png')

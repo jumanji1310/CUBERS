@@ -13,7 +13,7 @@
 <v>Output</v>
 </TreeKeys>
 <TreeStates>
-<CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237 type_name="CyDesigner.Common.Base.Controls.CyTreeViewState" version="1" SelectedNodeId="CUBERworkspace\Motor\TopDesign">
+<CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237 type_name="CyDesigner.Common.Base.Controls.CyTreeViewState" version="1" SelectedNodeId="CUBERworkspace\Motor\Source Files\main.c">
 <ExpandedNodeIds>
 <v>CUBERworkspace</v>
 <v>CUBERworkspace\Motor</v>
@@ -167,9 +167,8 @@
 </CyGuid_fdba8dfd-b15b-4469-9bbb-9e40c3e70997>
 <Unloaded />
 <OpenDocs>
-<name v=".\Motor.cydsn\main.c" />
-<name v=".\Motor.cydsn\Motor.cydwr" />
 <name v=".\Motor.cydsn\TopDesign\TopDesign.cysch" />
+<name v=".\Motor.cydsn\main.c" />
 </OpenDocs>
 <OpenDocsLayout><![CDATA[<?xml version="1.0"?><!--
 
@@ -177,7 +176,7 @@
   Copyright (c) 2001-2016 Actipro Software LLC.  All rights reserved.
   http://www.actiprosoftware.com
 
---><DocumentLayout Version="1.0"><LayoutData><TabbedMdiRootContainer Orientation="Horizontal"><TabbedMdiContainer Size="1399, 891" SelectedTabbedMdiWindow="0ec16c36-0424-4edd-9c8f-d3c75771ad74"><ToolWindow Key="Start Page:bd4649ab-da6b-4d04-a663-c722b8bf99db:Start Page" Guid="cc0a5385-86ff-4abd-9238-5488f1200870" /><DocumentWindow Key="C:\Users\JJ\Documents\PSoC Creator\CUBERworkspace\Motor.cydsn\main.c" Guid="0ec16c36-0424-4edd-9c8f-d3c75771ad74" /><DocumentWindow Key="C:\Users\JJ\Documents\PSoC Creator\CUBERworkspace\Motor.cydsn\Motor.cydwr" Guid="80aa4989-bfb3-49d4-a33c-9a78deb33bd8" /><DocumentWindow Key="C:\Users\JJ\Documents\PSoC Creator\CUBERworkspace\Motor.cydsn\TopDesign\TopDesign.cysch" Guid="deec31c3-c1bc-47db-bfae-1f4b6ef18c8c" /></TabbedMdiContainer></TabbedMdiRootContainer><FloatingContainers /></LayoutData></DocumentLayout>]]></OpenDocsLayout>
+--><DocumentLayout Version="1.0"><LayoutData><TabbedMdiRootContainer Orientation="Horizontal"><TabbedMdiContainer Size="1399, 891" SelectedTabbedMdiWindow="91bf232a-f351-4de4-add2-6d48740a88f6"><ToolWindow Key="Start Page:bd4649ab-da6b-4d04-a663-c722b8bf99db:Start Page" Guid="cc0a5385-86ff-4abd-9238-5488f1200870" /><DocumentWindow Key="C:\Users\JJ\OneDrive - Monash University\FYP\CUBERS\PsoC Creator Code\Motor.cydsn\TopDesign\TopDesign.cysch" Guid="f9a5fb19-d3b3-48ae-9ab9-75ee74d1f8d6" /><DocumentWindow Key="C:\Users\JJ\OneDrive - Monash University\FYP\CUBERS\PsoC Creator Code\Motor.cydsn\main.c" Guid="91bf232a-f351-4de4-add2-6d48740a88f6" /></TabbedMdiContainer></TabbedMdiRootContainer><FloatingContainers /></LayoutData></DocumentLayout>]]></OpenDocsLayout>
 <config v="" />
 <AutoUpdate v="true" />
 </CyGuid_843a90a4-0c4b-4e44-991d-05e7fb117a21>

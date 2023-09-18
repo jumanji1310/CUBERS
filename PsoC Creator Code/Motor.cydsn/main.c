@@ -58,10 +58,7 @@ void turn(int face, int clockwise, int steps){
 
 int main(void)
 {
-    CyGlobalIntEnable; /* Enable global interrupts. */
-
-    /* Place your initialization/startup code here (e.g. MyInst_Start()) */
-    
+    CyGlobalIntEnable; /* Enable global interrupts. */    
     // Initialise enable to be high (off) and direction to be 0
     Direction_Write(0);
     Enable_1_Write(1);
