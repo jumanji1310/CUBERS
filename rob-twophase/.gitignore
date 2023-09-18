@@ -27,12 +27,12 @@
 *.lib
 
 # Executables
-*.exe
+# *.exe
 *.out
 *.app
 
 # Project specific
-twophase
+# twophase
 twophase*.tbl
 .depend
 .idea
