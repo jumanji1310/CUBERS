@@ -20,79 +20,21 @@ def click_event(event, x, y, flags, param):
         print(model.predict(pixel_colour))
         plot_model(pixel_colour)
 
-# region Variable Definitions
-width = 640
-height = 480
+with open('face_positions.data','r') as file:
+    data = file.readlines()
 
-w_c = width//2
-h_c = height//2
+# Process data and store in array as tuples
+pairs = []
+for line in data:
+    x, y = map(int, line.strip().split(','))
+    pairs.append((x, y))
 
-w0 = 90
-h0 = 90
-
-#Main diagonal
-diag_offset = 160
-w1 = w_c - diag_offset
-h1 = h_c - diag_offset
-
-#Bottom two square next to diagonal
-offset1 = 30
-offset2 = 3
-w2 = w1 + offset1
-h2 = h1 - offset2
-
-w3 = w1 - offset2
-h3 = h1 + offset1
-
-# Same corner as diagonal
-w4 = w1 - 5
-h4 = h1 - 25
-
-w5 = w1 - 25
-h5 = h1 - 5
-
-#Bottom centres
-w6 = w4 + offset1
-h6 = h4 - offset2
-
-w7 = w5 - offset2
-h7 = h5 + offset1
-
-#Edge verticals
-v_offset = 21
-w8 = w4 - v_offset
-h8 = h4 - v_offset
-
-w9 = w5 - v_offset
-h9 = h5 - v_offset
-
-w10 = w8 - v_offset
-h10 = h8 - v_offset
-
-w11 = w9 - v_offset
-h11 = h9 - v_offset
-
-#Top centres
-w12 = w10 + offset1
-h12 = h10 - offset2
-
-w13 = w11 - offset2
-h13 = h11 + offset1
-
-widths = [w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12,w13]
-heights = [h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,h12,h13]
-
-down_points = [(w1,h1),(w2,h2),(w3,h3)]
-box_offset = 140
-
-# Defining points
-up_face = [(w_c - w0,h_c - h0),(w_c,h_c - h0),(w_c + w0,h_c - h0),(w_c - w0,h_c),(w_c + w0,h_c),(w_c - w0,h_c + h0),(w_c,h_c + h0),(w_c + w0,h_c + h0)]
-down_face = [(w1,height - h1),(width-w2,height-h2),(width-w1,height-h1),(w3,height-h3),(width-w3,h3),(w1,h1),(w2,h2),(width-w1,h1)]
-front_face = [(w10,height-h10),(width-w12,height-h12),(width-w10,height-h10),(w8,height-h8),(width-w8,height-h8),(w4,height-h4),(width-w6,height-h6),(width-w4,height-h4)]
-right_face = [(width-w11,height-h11),(width-w13,h13),(width-w11,h11),(width-w9,height-h9),(width-w9,h9),(width-w5,height-h5),(width-w7,h7),(width-w5,h5)]
-left_face = [(w11,h11),(w13,height-h13),(w11,height-h11),(w9,h9),(w9,height-h9),(w5,h5),(w7,height-h7),(w5,height-h5)]
-back_face = [(width-w10,h10),(w12,h12),(w10,h10),(width-w8,h8),(w8,h8),(width-w4,h4),(w6,h6),(w4,h4)]
-# endregion
+up_face = pairs[:8]
+right_face = pairs[8:16]
+front_face = pairs[16:24]
+down_face = pairs[24:32]
+left_face = pairs[32:40]
+back_face = pairs[40:48]
 
 def normalise(image):
     # Convert the image to LAB color space
@@ -185,8 +127,8 @@ def predict_image(img):
 
 
 def run_video():
-    cv2.namedWindow("Frame", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("Frame", width*2, height*2)
+    # cv2.namedWindow("Frame", cv2.WINDOW_NORMAL)
+    # cv2.resizeWindow("Frame", width, height)
 
     # define a video capture object
     vid = cv2.VideoCapture(0)
@@ -227,6 +169,7 @@ def run_video():
 
         # Normalise frame
         norm_frame = normalise(frame)
+        # norm_frame = cv2.resize(norm_frame, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
         cv2.imshow('Frame', norm_frame)
 
         cv2.setMouseCallback('Frame', click_event,param=norm_frame)
