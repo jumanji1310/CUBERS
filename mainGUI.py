@@ -5,7 +5,7 @@ import detector.predict as predictor
 from twophase import start_twophase, run_twophase
 from rotate_helper import *
 import time
-from capture import predict_image
+from capture import predict_image, normalise
 """
 Starting comms to PsoC
 """
@@ -14,7 +14,7 @@ if start_serial:
     import serial
 
     # Define the serial port and baud rate.
-    serial_port = 'COM4'
+    serial_port = 'COM6'
     baud_rate = 9600
 
     # Open the serial port.
@@ -176,7 +176,7 @@ class Solver:
         fast.grid(row=1,column=0)
 
     def update_cube(self):
-        """ 
+        """
         Display cubestring on the GUI
         """
         # converting cube state into colours
@@ -204,9 +204,9 @@ class Solver:
                     square_color = colour[face_id*9 + row*3 + col]
                     square[0].configure(background=square_color)
                     square[0].configure(highlightbackground='black')
-    
+
     def scan(self,event):
-        """ 
+        """
         Scan image to determine each square colour of each face and update the cubestring
         """
         # left to right top to bottom in order of U R F D L B
@@ -218,7 +218,7 @@ class Solver:
         ret, self.frame = self.vid.read()
         # cv2.imshow('Scan',frame)
         # cv2.waitKey(0)
-        self.testcubestring = predict_image(self.frame)
+        self.cubestring = predict_image(normalise(self.frame))
 
         # self.cubestring = predictor.predict_Colour('images/Capture')
         self.update_cube()
@@ -227,6 +227,7 @@ class Solver:
         print(f"Scan time: {self.scanTime} seconds")
         self.sec.set(f'Timer: {self.scanTime:.4f} seconds')
 
+        cv2.imshow("Scan Frame",self.frame)
     def scramble(self,event):
         """
         Generate 25 random valid moves for robot to scramble
@@ -241,7 +242,7 @@ class Solver:
         self.solutionStr.set(f'Scramble: {moves} ({self.moveLength} moves)')
 
         print(f'Scramble: {moves}')
-        
+
         # send to PsoC
         self.sendToPsoC(moves)
 
@@ -249,7 +250,7 @@ class Solver:
         """
         Scan the cube, update the GUI and solve it
         """
-        
+
         # scan cube before solving
         self.scan(event)
         start_time = time.time()
@@ -267,7 +268,7 @@ class Solver:
         left_string = self.cubestring[36:45]
         back_string = self.cubestring[45:54]
         new_cubestring = front_string + rotate_cw(right_string) + down_string + flip_2(back_string) + rotate_ccw(left_string) + flip_2(up_string)
-        
+
         stateswap_dict = {'U':'B','F':'U','D':'F','B':'D'}
         new_cubestring2 = ""
         for letter in new_cubestring:
@@ -293,7 +294,7 @@ class Solver:
         moves = ' '.join(solve_array) + ' '
         self.moveLength = len(moves.split(" ")) - 1
         self.solutionStr.set(f'Solution: {moves} ({self.moveLength} moves)')
-        
+
         end_time = time.time()
         self.searchTime = end_time - start_time
         print(f"Search time: {self.searchTime} seconds")
@@ -346,7 +347,7 @@ class Solver:
                 # calculating elapsed time
                 end_time = time.time()  # Record end time
                 solve_time = end_time - start_time  # Calculate elapsed time
-                
+
                 # updating timer
                 self.sec.set(f'Timer: {self.scanTime + self.searchTime + solve_time:.4f} seconds')
                 root.update()
