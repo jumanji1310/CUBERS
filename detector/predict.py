@@ -5,22 +5,24 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.neighbors import KNeighborsClassifier
 
-#Loading training data               
-with open('./detector/training.data','r') as file:
-    train_pixels = []
-    train_labels = []
-    for line in file:
-        data = line.strip().split(',')
-        train_pixels.append([int(data[0]),int(data[1]),int(data[2])])
-        train_labels.append(data[3])
+def train_model():
+    global train_pixels, train_labels, model
+    #Loading training data               
+    with open('./detector/training.data','r') as file:
+        train_pixels = []
+        train_labels = []
+        for line in file:
+            data = line.strip().split(',')
+            train_pixels.append([int(data[0]),int(data[1]),int(data[2])])
+            train_labels.append(data[3])
 
-# convert to numpy array
-train_pixels = np.array(train_pixels)
-train_labels = np.array(train_labels)
-# train the k-NN model
-k = 3
-model = KNeighborsClassifier(n_neighbors=k)
-model.fit(train_pixels, train_labels)
+    # convert to numpy array
+    train_pixels = np.array(train_pixels)
+    train_labels = np.array(train_labels)
+    # train the k-NN model
+    k = 3
+    model = KNeighborsClassifier(n_neighbors=k)
+    model.fit(train_pixels, train_labels)
 
 def plot_model(pixel=None):
     # Close any existing figures
@@ -59,8 +61,6 @@ def plot_model(pixel=None):
     # Show the plot
     plt.show()
 
-# plot_model()
-
 #convert colour string to Singmaster notation
 def stringToSingmaster(string):
     turn_string = ''
@@ -80,3 +80,5 @@ def stringToSingmaster(string):
             turn_string += 'B'
     print(turn_string)
     return turn_string
+
+train_model()

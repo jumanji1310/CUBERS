@@ -124,8 +124,11 @@ def predict_image(img):
     return stringToSingmaster(' '.join(state_string))
 
 
-
-
+width = 640
+height = 480
+w_c = width//2
+h_c = height//2
+box_offset = 140
 def run_video():
     # cv2.namedWindow("Frame", cv2.WINDOW_NORMAL)
     # cv2.resizeWindow("Frame", width, height)
@@ -188,7 +191,6 @@ def run_video():
         # desired button of your choice
         if key & 0xFF == ord('q'):
             break
-
 
 # run_video()
 

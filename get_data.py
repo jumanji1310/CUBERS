@@ -1,4 +1,5 @@
 import cv2
+from detector.predict import train_model, plot_model
 
 def normalise(image):
     # Convert the image to LAB color space
@@ -54,19 +55,18 @@ while len(rgb_values) < 48:
         break
 
     # Check for 'C' key to capture RGB values
-    if cv2.waitKey(1) & 0xFF == ord('c'):
-        for x, y in face_positions:            
-            b, g, r = frame[y, x]  # OpenCV uses BGR instead of RGB
-            rgb_values.append((r, g, b))
-            print(f'RGB value at ({x},{y}): R={r}, G={g}, B={b}')
-
-# Save the RGB values to a .data file
-colours = ['blue','red','white','green','orange','yellow']
-face_count = 0
-with open('detector/training.data', 'w') as file:
-    for r, g, b in rgb_values:
-        file.write(f'{r},{g},{b},{colours[face_count//8]}\n')
-        face_count += 1
+    elif cv2.waitKey(1) & 0xFF == ord('c'):
+        colours = ['blue','red','white','green','orange','yellow']
+        face_count = 0
+        with open('detector/training.data', 'w') as file:
+            for x, y in face_positions:            
+                b, g, r = frame[y, x]  # OpenCV uses BGR instead of RGB
+                file.write(f'{r},{g},{b},{colours[face_count//8]}\n')
+                face_count += 1
+        train_model()
+        plot_model()
 # Release resources
 video_capture.release()
 cv2.destroyAllWindows()
+
+
